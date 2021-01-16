@@ -6,9 +6,9 @@ import { Thing } from '../.';
 const App = () => {
     return (
         <div>
-            <Thing/>
+            <Thing />
         </div>
     );
 };
 
-ReactDOM.render(<App/>, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('root'));

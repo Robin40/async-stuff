@@ -1,6 +1,9 @@
-import autoBind from "auto-bind";
-import { fetchWithInferredContentType, RequestInitWith } from "./inferContentType";
-import { Url } from "./urlUtils";
+import autoBind from 'auto-bind';
+import {
+    fetchWithInferredContentType,
+    RequestInitWith,
+} from './inferContentType';
+import { Url } from './urlUtils';
 
 /** An object that represents a REST resource,
  * with methods to make requests using REST verbs. */
@@ -87,7 +90,9 @@ export class Resource<Item extends WithOptionalId> {
  * It contains the response object returned by `fetch`. */
 export class FetchError extends Error {
     constructor(readonly response: Response, method: string) {
-        super(`${response.status} error thrown by ${method} to ${response.url}`);
+        super(
+            `${response.status} error thrown by ${method} to ${response.url}`
+        );
     }
 }
 
