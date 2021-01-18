@@ -1,17 +1,25 @@
 import 'react-app-polyfill/ie11';
 import * as React from 'react';
+import { useEffect } from 'react';
 import * as ReactDOM from 'react-dom';
 import { Thing } from '../.';
-import { useEffect } from 'react';
-import { Endpoint } from '../src/Endpoint';
+import { Server } from '../src/Server';
 
-const endpoint = Endpoint.getAll(
-    'https://yfxit29sub.execute-api.us-west-1.amazonaws.com/dev/documentos/morosidades'
+const server = new Server(
+    'https://yfxit29sub.execute-api.us-west-1.amazonaws.com/dev/'
 );
+
+const morosidades = server.endpoint.getAll('documentos/morosidades');
+
+const login = server.endpoint.post<
+    { rut: string },
+    { token: string; id: number }
+>('login/persona');
 
 const App = () => {
     useEffect(() => {
-        endpoint.fetch().then(console.log);
+        morosidades.fetch().then(console.log);
+        login.fetch({ rut: 'blah' }).then(console.log);
     }, []);
 
     return (

@@ -3,6 +3,7 @@ import { fetchWithInferredContentType } from './inferContentType';
 import _ from 'lodash';
 import { FetchError } from './Resource';
 import { Url } from './urlUtils';
+import autoBind from 'auto-bind';
 
 export class Endpoint<Params extends any[], ResponseData> {
     private constructor(
@@ -10,7 +11,10 @@ export class Endpoint<Params extends any[], ResponseData> {
         readonly url: string,
         private urlWithParams: (url: string, ...params: Params) => string,
         private hasRequestBody: boolean
-    ) {}
+    ) {
+        // this allows to pass Endpoint methods as functions
+        autoBind(this);
+    }
 
     static post<RequestBody, ResponseData>(
         url: string
