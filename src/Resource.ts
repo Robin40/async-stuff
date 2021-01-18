@@ -59,7 +59,7 @@ export class Resource<Item extends WithOptionalId> {
         url: string,
         init: RequestInitWith<RequestBody> | Omit<RequestInit, 'body'>
     ): Promise<ResponseData> {
-        const response = await fetchWithInferredContentType(url, init);
+        const response = await fetchWithInferredContentType(url, init as any);
 
         if (!response.ok) {
             throw new FetchError(response, init.method ?? 'GET');

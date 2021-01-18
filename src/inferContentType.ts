@@ -1,12 +1,14 @@
+import _ from 'lodash';
+
 /** A version of the `fetch` function that allows `body` to be a
  * JS object (or a FormData), and infers the Content-Type based on it. */
 export async function fetchWithInferredContentType<RequestBody>(
     url: string,
-    init: RequestInitWith<RequestBody> | Omit<RequestInit, 'body'>
+    init: RequestInitWith<RequestBody>
 ): Promise<Response> {
     /* If a `body` was not passed, we don't need to infer the Content-Type */
-    if (!('body' in init)) {
-        return fetch(url, init);
+    if (_.isUndefined(init.body)) {
+        return fetch(url, init as any);
     }
 
     /* If a `FormData` object is passed, `fetch` can infer the Content-Type */

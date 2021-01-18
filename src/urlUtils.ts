@@ -22,4 +22,19 @@ export const Url = {
     withTrailingSlash(url: string): string {
         return url.endsWith('/') ? url : url + '/';
     },
+
+    withId(url: string, id: number | string): string {
+        const urlWithId = Url.join(url, `${id}`); // [1]
+
+        if (id == null) {
+            throw new Error(
+                `Attempted to make a request to an URL with non-existent id: "${urlWithId}"`
+            );
+        }
+
+        return urlWithId;
+
+        /* [1]: `id` may be `null` or `undefined` by accident so we
+         *      do string interpolation instead of `.toString()`. */
+    },
 };
