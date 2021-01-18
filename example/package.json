@@ -15,7 +15,8 @@
     "js-joda": "../node_modules/js-joda",
     "react": "../node_modules/react",
     "react-dom": "../node_modules/react-dom/profiling",
-    "scheduler/tracing": "../node_modules/scheduler/tracing-profiling"
+    "scheduler/tracing": "../node_modules/scheduler/tracing-profiling",
+    "superstruct": "../node_modules/superstruct"
   },
   "devDependencies": {
     "@types/react": "^16.9.11",
