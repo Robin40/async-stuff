@@ -22,7 +22,8 @@ export class Server {
     constructor(readonly apiUrl: string) {
         this.endpoint = _.mapValues(
             _.pick(Endpoint, staticMethods),
-            (method: any) => (path: string) => method(Url.join(apiUrl, path))
+            (method: any) => (path: string, ...rest: any) =>
+                method(Url.join(apiUrl, path), ...rest)
         );
     }
 }
