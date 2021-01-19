@@ -46,7 +46,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
     private hasRequestBody = this.params.hasRequestBody;
     private struct = this.params.struct;
 
-    private url = Url.join(this.server.apiUrl, this.path);
+    readonly url = Url.join(this.server.apiUrl, this.path);
 
     async fetch(...params: FetchParams): Promise<ResponseData> {
         const url = this.urlWithParams(this.url, ...params);
