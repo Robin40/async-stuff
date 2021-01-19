@@ -1,11 +1,7 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { Thing } from '../src';
+import { Url } from '../src/urlUtils';
 
-describe('it', () => {
-    it('renders without crashing', () => {
-        const div = document.createElement('div');
-        ReactDOM.render(<Thing />, div);
-        ReactDOM.unmountComponentAtNode(div);
+describe('urls', () => {
+    it('can be joined taking care of extra slashes', () => {
+        expect(Url.join('a', 'b/', '/c', 'd/')).toBe('a/b/c/d');
     });
 });

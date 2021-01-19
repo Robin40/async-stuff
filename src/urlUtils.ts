@@ -2,7 +2,7 @@
 export const Url = {
     /** Joins N parts of a URL taking care of extra slashes.
      *
-     * Example: `Url.join('a, 'b/', '/c', 'd/') === 'a/b/c/d'`. */
+     * Example: `Url.join('a', 'b/', '/c', 'd/') === 'a/b/c/d'`. */
     join(...parts: string[]): string {
         return parts.map(Url.trimSlashes).join('/');
     },

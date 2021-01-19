@@ -2,8 +2,7 @@ import 'react-app-polyfill/ie11';
 import * as React from 'react';
 import { useEffect } from 'react';
 import * as ReactDOM from 'react-dom';
-import { Thing } from '../.';
-import { Server } from '../src/Server';
+import { Server } from '../src';
 import {
     array,
     boolean,
@@ -11,7 +10,6 @@ import {
     integer,
     lazy,
     nullable,
-    number,
     object,
     optional,
     string,
@@ -169,11 +167,7 @@ const App = () => {
         voucherPagination.fetch().then(console.log);
     }, []);
 
-    return (
-        <div>
-            <Thing />
-        </div>
-    );
+    return <div>See console logs</div>;
 };
 
 ReactDOM.render(<App />, document.getElementById('root'));
