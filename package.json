@@ -1,6 +1,10 @@
 {
+  "name": "@tdc-cl/async-stuff",
   "version": "1.0.0",
+  "description": "Declarative handling of asynchronous stuff related to REST APIs",
+  "author": "Robin40",
   "license": "MIT",
+  "repository": "Robin40/async-stuff",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
@@ -38,8 +42,6 @@
     "tabWidth": 4,
     "arrowParens": "avoid"
   },
-  "name": "async-stuff",
-  "author": "Robinson Castro F.",
   "module": "dist/async-stuff.esm.js",
   "size-limit": [
     {
