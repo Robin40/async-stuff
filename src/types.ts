@@ -16,3 +16,6 @@ export const localDate = (): Struct<LocalDate, null> /* [2] */ =>
     );
 /* [1]: LocalDate constructor is private so we have to do this.
  * [2]: LocalDate was casted to any in [1] so we tell TypeScript the correct type. */
+
+/** Possible id types for REST resources. */
+export type PossibleId = number | string;

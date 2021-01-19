@@ -5,62 +5,50 @@ import { FetchError } from './Resource';
 import { Url } from './urlUtils';
 import autoBind from 'auto-bind';
 import { create, Describe } from 'superstruct';
+import { Server } from './Server';
 
-export class Endpoint<Params extends any[], ResponseData> {
-    private constructor(
-        readonly method: CrudMethod,
-        readonly url: string,
-        private urlWithParams: (url: string, ...params: Params) => string,
-        private hasRequestBody: boolean,
-        private struct?: Describe<ResponseData>
-    ) {
+/** @internal
+ * An object with all the parameters received by the Endpoint constructor. */
+export interface EndpointParams<FetchParams extends any[], ResponseData> {
+    /** The server object used to create this endpoint. */
+    server: Server;
+
+    /** The HTTP method used to fetch this endpoint. */
+    method: CrudMethod;
+
+    /** The part after the server API url, without any ids or query params. */
+    path: string;
+
+    /** The function that should be used to add ids, query params, slashes, etc. to the URL. */
+    urlWithParams(url: string, ...params: FetchParams): string;
+
+    /** `true` if a body should be sent with the fetch API. */
+    hasRequestBody?: boolean;
+
+    /** A SuperStruct object to validate and coerce the JSON response. */
+    struct?: Describe<ResponseData>;
+}
+
+/** An object representing a single endpoint (with a single HTTP method).
+ *
+ * You should create these objects from a server instance instead of creating them directly. */
+export class Endpoint<FetchParams extends any[], ResponseData> {
+    /** @internal */
+    constructor(private params: EndpointParams<FetchParams, ResponseData>) {
         // this allows to pass Endpoint methods as functions
         autoBind(this);
     }
 
-    static post<RequestBody, ResponseData>(
-        url: string,
-        struct?: Describe<ResponseData>
-    ): Endpoint<[RequestBody], ResponseData> {
-        return new Endpoint('POST', url, Url.withTrailingSlash, true, struct);
-    }
+    private server = this.params.server;
+    private method = this.params.method;
+    private path = this.params.path;
+    private urlWithParams = this.params.urlWithParams;
+    private hasRequestBody = this.params.hasRequestBody;
+    private struct = this.params.struct;
 
-    static getAll<ResponseData>(
-        url: string,
-        struct?: Describe<ResponseData>
-    ): Endpoint<[], ResponseData> {
-        return new Endpoint('GET', url, _.identity, false, struct);
-    }
+    private url = Url.join(this.server.apiUrl, this.path);
 
-    static get<Id extends PossibleId, ResponseData>(
-        url: string,
-        struct?: Describe<ResponseData>
-    ): Endpoint<[Id], ResponseData> {
-        return new Endpoint('GET', url, Url.withId, false, struct);
-    }
-
-    static put<Id extends PossibleId, RequestBody, ResponseData>(
-        url: string,
-        struct?: Describe<ResponseData>
-    ): Endpoint<[Id, RequestBody], ResponseData> {
-        return new Endpoint('PUT', url, Url.withId, true, struct);
-    }
-
-    static patch<Id extends PossibleId, RequestBody, ResponseData>(
-        url: string,
-        struct?: Describe<ResponseData>
-    ): Endpoint<[Id, RequestBody], ResponseData> {
-        return new Endpoint('PATCH', url, Url.withId, true, struct);
-    }
-
-    static delete<Id extends PossibleId, ResponseData>(
-        url: string,
-        struct?: Describe<ResponseData>
-    ): Endpoint<[Id], ResponseData> {
-        return new Endpoint('DELETE', url, Url.withId, false, struct);
-    }
-
-    async fetch(...params: Params): Promise<ResponseData> {
+    async fetch(...params: FetchParams): Promise<ResponseData> {
         const url = this.urlWithParams(this.url, ...params);
 
         const response = await fetchWithInferredContentType(url, {
@@ -82,5 +70,3 @@ export class Endpoint<Params extends any[], ResponseData> {
         return data;
     }
 }
-
-type PossibleId = number | string;
