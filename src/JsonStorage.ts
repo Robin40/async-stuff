@@ -1,14 +1,21 @@
 import { create, Describe, StructError } from 'superstruct';
+import { Observable } from './Observable';
+import autoBind from 'auto-bind';
 
-export class JsonStorage<T> {
-    constructor(private key: string, private struct: Describe<T>) {}
+export class JsonStorage<T> extends Observable<T | undefined> {
+    constructor(private key: string, private struct: Describe<T>) {
+        super();
+        autoBind(this);
+    }
 
     set(data: T) {
         localStorage.setItem(this.key, JSON.stringify(data));
+        this.notify(data);
     }
 
     clear() {
         localStorage.removeItem(this.key);
+        this.notify(undefined);
     }
 
     patch(update: Partial<T>) {

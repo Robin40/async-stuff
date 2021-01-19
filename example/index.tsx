@@ -1,20 +1,47 @@
 import 'react-app-polyfill/ie11';
 import * as React from 'react';
-import { useEffect } from 'react';
 import * as ReactDOM from 'react-dom';
-import { Server } from '../src';
+import { Endpoint, JsonStorage, Server } from '../src';
 import { array } from 'superstruct';
-import { models } from '../models';
+import { models } from './models';
 import { LoginOnlyRut, LoginResponse } from './types';
+import { useJsonStorage } from '../src/useJsonStorage';
+import {
+    QueryClient,
+    QueryClientProvider,
+    useMutation,
+    useQuery,
+} from 'react-query';
+import { Bearer } from '../src/Bearer';
+import _ = require('lodash');
 
-const server = new Server(
-    'https://yfxit29sub.execute-api.us-west-1.amazonaws.com/dev/'
+const queryClient = new QueryClient();
+
+const authStorage = new JsonStorage(
+    'async-stuff.example.auth',
+    models.LoginResponse()
 );
 
-const login = server.endpoint.post<LoginOnlyRut, LoginResponse>(
+const server = new Server(
+    'https://yfxit29sub.execute-api.us-west-1.amazonaws.com/dev/',
+    {
+        headers: () => Bearer(authStorage.get()?.token),
+    }
+);
+
+const loginPersona = server.endpoint.post<LoginOnlyRut, LoginResponse>(
     'login/persona',
     models.LoginResponse()
 );
+
+async function login(credentials: LoginOnlyRut) {
+    const tokenAndId = await loginPersona.fetch(credentials);
+    authStorage.set(tokenAndId);
+}
+
+function logout() {
+    authStorage.clear();
+}
 
 const morosidades = server.endpoint.getAll(
     'documentos/morosidades',
@@ -27,15 +54,48 @@ const voucherPagination = server.endpoint.getAll(
 );
 
 const App = () => {
-    useEffect(() => {
-        morosidades.fetch().then(console.log);
+    const user = useJsonStorage(authStorage);
+    const loginMutation = useMutation(login);
+    const credentials = { rut: 'placeholder' };
 
-        login.fetch({ rut: 'blah' }).then(console.log);
+    if (!user) {
+        return (
+            <div>
+                <button onClick={() => loginMutation.mutate(credentials)}>
+                    Log in
+                </button>
+                <Debug value={loginMutation} />
+            </div>
+        );
+    }
 
-        voucherPagination.fetch().then(console.log);
-    }, []);
-
-    return <div>See console logs</div>;
+    return (
+        <div>
+            <button onClick={logout}>Log out</button>
+            <div style={{ display: 'flex' }}>
+                <Test endpoint={morosidades} />
+                <Test endpoint={voucherPagination} />
+            </div>
+        </div>
+    );
 };
 
-ReactDOM.render(<App />, document.getElementById('root'));
+function Test({ endpoint }: { endpoint: Endpoint<any, any> }) {
+    const query = useQuery(endpoint.url, endpoint.fetch);
+    return <Debug value={query} />;
+}
+
+function Debug({ value }: { value: any }) {
+    return (
+        <pre style={{ flex: 1 }}>
+            {JSON.stringify(value, null, _.repeat(' ', 4))}
+        </pre>
+    );
+}
+
+ReactDOM.render(
+    <QueryClientProvider client={queryClient}>
+        <App />
+    </QueryClientProvider>,
+    document.getElementById('root')
+);

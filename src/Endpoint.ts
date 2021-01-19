@@ -1,7 +1,7 @@
 import { CrudMethod } from './types';
 import { fetchWithInferredContentType } from './inferContentType';
 import _ from 'lodash';
-import { FetchError } from './Resource';
+import { FetchError } from './FetchError';
 import { Url } from './urlUtils';
 import autoBind from 'auto-bind';
 import { create, Describe } from 'superstruct';
@@ -48,11 +48,13 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
     readonly url = Url.join(this.server.apiUrl, this.path);
 
+    /** Makes a request to the endpoint with the given params. */
     async fetch(...params: FetchParams): Promise<ResponseData> {
         const url = this.urlWithParams(this.url, ...params);
 
         const response = await fetchWithInferredContentType(url, {
             method: this.method,
+            headers: this.server.headers(),
             body: this.hasRequestBody ? _.last(params) : undefined,
         });
 
