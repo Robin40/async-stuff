@@ -1,18 +1,16 @@
 import 'react-app-polyfill/ie11';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Endpoint, JsonStorage, Server } from '../src';
+import { Bearer, Endpoint, JsonStorage, Server, useJsonStorage } from '../src';
 import { array } from 'superstruct';
 import { models } from './models';
 import { LoginOnlyRut, LoginResponse } from './types';
-import { useJsonStorage } from '../src/useJsonStorage';
 import {
     QueryClient,
     QueryClientProvider,
     useMutation,
     useQuery,
 } from 'react-query';
-import { Bearer } from '../src/Bearer';
 import _ = require('lodash');
 
 const queryClient = new QueryClient();
