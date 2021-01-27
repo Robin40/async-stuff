@@ -5,12 +5,17 @@ import { Url } from './urlUtils';
 import _ from 'lodash';
 import { PossibleId } from './types';
 
+export interface EndpointConfig {
+    headers?(): HeadersInit;
+}
+
 export class EndpointFactory {
     constructor(private server: Server) {}
 
     post<RequestBody, ResponseData>(
         path: string,
-        struct?: Describe<ResponseData>
+        struct?: Describe<ResponseData>,
+        config?: EndpointConfig
     ): Endpoint<[RequestBody], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -19,12 +24,14 @@ export class EndpointFactory {
             urlWithParams: Url.withTrailingSlash,
             hasRequestBody: true,
             struct,
+            ...config,
         });
     }
 
     getAll<ResponseData>(
         path: string,
-        struct?: Describe<ResponseData>
+        struct?: Describe<ResponseData>,
+        config?: EndpointConfig
     ): Endpoint<[], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -33,12 +40,14 @@ export class EndpointFactory {
             urlWithParams: _.identity,
             hasRequestBody: false,
             struct,
+            ...config,
         });
     }
 
     get<Id extends PossibleId, ResponseData>(
         path: string,
-        struct?: Describe<ResponseData>
+        struct?: Describe<ResponseData>,
+        config?: EndpointConfig
     ): Endpoint<[Id], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -47,12 +56,14 @@ export class EndpointFactory {
             urlWithParams: Url.withId,
             hasRequestBody: false,
             struct,
+            ...config,
         });
     }
 
     put<Id extends PossibleId, RequestBody, ResponseData>(
         path: string,
-        struct?: Describe<ResponseData>
+        struct?: Describe<ResponseData>,
+        config?: EndpointConfig
     ): Endpoint<[Id, RequestBody], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -61,12 +72,14 @@ export class EndpointFactory {
             urlWithParams: Url.withId,
             hasRequestBody: true,
             struct,
+            ...config,
         });
     }
 
     patch<Id extends PossibleId, RequestBody, ResponseData>(
         path: string,
-        struct?: Describe<ResponseData>
+        struct?: Describe<ResponseData>,
+        config?: EndpointConfig
     ): Endpoint<[Id, RequestBody], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -75,12 +88,14 @@ export class EndpointFactory {
             urlWithParams: Url.withId,
             hasRequestBody: true,
             struct,
+            ...config,
         });
     }
 
     delete<Id extends PossibleId, ResponseData>(
         path: string,
-        struct?: Describe<ResponseData>
+        struct?: Describe<ResponseData>,
+        config?: EndpointConfig
     ): Endpoint<[Id], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -89,6 +104,7 @@ export class EndpointFactory {
             urlWithParams: Url.withId,
             hasRequestBody: false,
             struct,
+            ...config,
         });
     }
 }

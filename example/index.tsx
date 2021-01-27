@@ -43,7 +43,12 @@ function logout() {
 
 const morosidades = server.endpoint.getAll(
     'documentos/morosidades',
-    array(models.Morosidad())
+    array(models.Morosidad()),
+    {
+        headers: () => ({
+            'Dani-Example': Math.random() < 0.5 ? 'Persona' : 'Corredor',
+        }),
+    }
 );
 
 const voucherPagination = server.endpoint.getAll(

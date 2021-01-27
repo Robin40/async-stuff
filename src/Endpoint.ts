@@ -27,6 +27,8 @@ export interface EndpointParams<FetchParams extends any[], ResponseData> {
 
     /** A SuperStruct object to validate and coerce the JSON response. */
     struct?: Describe<ResponseData>;
+
+    headers?(): HeadersInit;
 }
 
 /** An object representing a single endpoint (with a single HTTP method).
@@ -45,16 +47,19 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
     private urlWithParams = this.params.urlWithParams;
     private hasRequestBody = this.params.hasRequestBody;
     private struct = this.params.struct;
+    private headers = this.params.headers;
 
     readonly url = Url.join(this.server.apiUrl, this.path);
 
     /** Makes a request to the endpoint with the given params. */
     async fetch(...params: FetchParams): Promise<ResponseData> {
         const url = this.urlWithParams(this.url, ...params);
+        const serverHeaders = new Headers(this.server.headers());
+        const endpointHeaders = new Headers(this.headers?.());
 
         const response = await fetchWithInferredContentType(url, {
             method: this.method,
-            headers: this.server.headers(),
+            headers: mergeHeaders(serverHeaders, endpointHeaders),
             body: this.hasRequestBody ? _.last(params) : undefined,
         });
 
@@ -71,4 +76,11 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
         return data;
     }
+}
+
+function mergeHeaders(a: Headers, b: Headers) {
+    b.forEach((value, name) => {
+        a.append(name, value);
+    });
+    return a;
 }
