@@ -5,8 +5,9 @@ import { Url } from './urlUtils';
 import _ from 'lodash';
 import { PossibleId } from './types';
 
-export interface EndpointConfig {
+export interface EndpointConfig<ResponseData> {
     headers?(): HeadersInit;
+    mock?: ResponseData;
 }
 
 export class EndpointFactory {
@@ -15,7 +16,7 @@ export class EndpointFactory {
     post<RequestBody, ResponseData>(
         path: string,
         struct?: Describe<ResponseData>,
-        config?: EndpointConfig
+        config?: EndpointConfig<ResponseData>
     ): Endpoint<[RequestBody], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -31,7 +32,7 @@ export class EndpointFactory {
     getAll<ResponseData>(
         path: string,
         struct?: Describe<ResponseData>,
-        config?: EndpointConfig
+        config?: EndpointConfig<ResponseData>
     ): Endpoint<[], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -47,7 +48,7 @@ export class EndpointFactory {
     get<Id extends PossibleId, ResponseData>(
         path: string,
         struct?: Describe<ResponseData>,
-        config?: EndpointConfig
+        config?: EndpointConfig<ResponseData>
     ): Endpoint<[Id], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -63,7 +64,7 @@ export class EndpointFactory {
     put<Id extends PossibleId, RequestBody, ResponseData>(
         path: string,
         struct?: Describe<ResponseData>,
-        config?: EndpointConfig
+        config?: EndpointConfig<ResponseData>
     ): Endpoint<[Id, RequestBody], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -79,7 +80,7 @@ export class EndpointFactory {
     patch<Id extends PossibleId, RequestBody, ResponseData>(
         path: string,
         struct?: Describe<ResponseData>,
-        config?: EndpointConfig
+        config?: EndpointConfig<ResponseData>
     ): Endpoint<[Id, RequestBody], ResponseData> {
         return new Endpoint({
             server: this.server,
@@ -95,7 +96,7 @@ export class EndpointFactory {
     delete<Id extends PossibleId, ResponseData>(
         path: string,
         struct?: Describe<ResponseData>,
-        config?: EndpointConfig
+        config?: EndpointConfig<ResponseData>
     ): Endpoint<[Id], ResponseData> {
         return new Endpoint({
             server: this.server,

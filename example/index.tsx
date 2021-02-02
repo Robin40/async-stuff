@@ -12,6 +12,7 @@ import {
     useQuery,
 } from 'react-query';
 import _ = require('lodash');
+import Decimal from 'decimal.js';
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,9 @@ const morosidades = server.endpoint.getAll(
         headers: () => ({
             'Dani-Example': Math.random() < 0.5 ? 'Persona' : 'Corredor',
         }),
+        mock: [
+            { id: 42, divisa: 'uf', monto: new Decimal(2000), pagado: true },
+        ],
     }
 );
 

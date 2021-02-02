@@ -29,6 +29,8 @@ export interface EndpointParams<FetchParams extends any[], ResponseData> {
     struct?: Describe<ResponseData>;
 
     headers?(): HeadersInit;
+
+    mock?: ResponseData;
 }
 
 /** An object representing a single endpoint (with a single HTTP method).
@@ -48,6 +50,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
     private hasRequestBody = this.params.hasRequestBody;
     private struct = this.params.struct;
     private headers = this.params.headers;
+    private mock = this.params.mock;
 
     readonly url = Url.join(this.server.apiUrl, this.path);
 
@@ -57,11 +60,24 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         const serverHeaders = new Headers(this.server.headers());
         const endpointHeaders = new Headers(this.headers?.());
 
-        const response = await fetchWithInferredContentType(url, {
-            method: this.method,
-            headers: mergeHeaders(serverHeaders, endpointHeaders),
-            body: this.hasRequestBody ? _.last(params) : undefined,
-        });
+        let response: Response;
+        try {
+            response = await fetchWithInferredContentType(url, {
+                method: this.method,
+                headers: mergeHeaders(serverHeaders, endpointHeaders),
+                body: this.hasRequestBody ? _.last(params) : undefined,
+            });
+        } catch (err) {
+            console.log({ err });
+            if (isNetworkError(err) && this.mock !== undefined) {
+                return this.mock;
+            }
+            throw err;
+        }
+
+        if (response.status === 404 && this.mock !== undefined) {
+            return this.mock;
+        }
 
         if (!response.ok) {
             throw new FetchError(response, this.method);
@@ -83,4 +99,11 @@ function mergeHeaders(a: Headers, b: Headers) {
         a.append(name, value);
     });
     return a;
+}
+
+export function isNetworkError(err: any): boolean {
+    return (
+        err instanceof TypeError &&
+        (err.message.includes('NetworkError') || err.message.includes('fetch'))
+    );
 }
