@@ -56,6 +56,10 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
     /** Makes a request to the endpoint with the given params. */
     async fetch(...params: FetchParams): Promise<ResponseData> {
+        if (this.mock !== undefined) {
+            return this.mock;
+        }
+
         const url = this.urlWithParams(this.url, ...params);
         const serverHeaders = new Headers(this.server.headers());
         const endpointHeaders = new Headers(this.headers?.());
