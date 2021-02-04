@@ -30,7 +30,7 @@ export interface EndpointParams<FetchParams extends any[], ResponseData> {
 
     headers?(): HeadersInit;
 
-    mock?: ResponseData;
+    mock?: ResponseData | ((...params: FetchParams) => ResponseData);
 }
 
 /** An object representing a single endpoint (with a single HTTP method).
@@ -57,7 +57,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
     /** Makes a request to the endpoint with the given params. */
     async fetch(...params: FetchParams): Promise<ResponseData> {
         if (this.mock !== undefined) {
-            return this.mock;
+            return _.isFunction(this.mock) ? this.mock(...params) : this.mock;
         }
 
         const url = this.urlWithParams(this.url, ...params);
