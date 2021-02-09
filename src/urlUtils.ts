@@ -1,24 +1,33 @@
 /** An object with URL utils related to handling wild slashes. */
 export const Url = {
-    /** Joins N parts of a URL taking care of extra slashes.
+    /** Joins N parts of a URL without duplicated slashes.
+     * The joined URL will respect the presence of a trailing slash from the last part.
      *
-     * Example: `Url.join('a', 'b/', '/c', 'd/') === 'a/b/c/d'`. */
+     * Example: `Url.join('a', 'b/', '/c', 'd/') === 'a/b/c/d/'`. */
     join(...parts: string[]): string {
-        return parts.map(Url.trimSlashes).join('/');
+        // prettier-ignore
+        return parts.reduce((url, part) =>
+            Url.withoutTrailingSlash(url) + '/' + Url.withoutLeadingSlash(part)
+        );
     },
 
-    /** Removes the leading and/or trailing slash of a URL if present.
+    /** Removes the leading slash from the given URL part if present.
      *
-     * Example: `Url.trimSlashes('/a/b/') === 'a/b'`. */
-    trimSlashes(url: string): string {
-        return url
-            .replace(/^\//, '') // remove leading slash
-            .replace(/\/$/, ''); // remove trailing slash
+     * Example: `Url.withoutLeadingSlash('/foo/bar/') === 'foo/bar/'`. */
+    withoutLeadingSlash(part: string): string {
+        return part.replace(/^\//, '');
     },
 
-    /** Adds a trailing slash to the URL if not present.
+    /** Removes the trailing slash from the given URL if present.
      *
-     * Example: `Url.withTrailingSlash('a/b') === 'a/b/'`. */
+     * Example: `Url.withoutTrailingSlash('http://foo/') === 'http://foo'`. */
+    withoutTrailingSlash(url: string): string {
+        return url.replace(/\/$/, '');
+    },
+
+    /** Adds a trailing slash to the given URL if not present.
+     *
+     * Example: `Url.withTrailingSlash('http://foo') === 'http://foo/'`. */
     withTrailingSlash(url: string): string {
         return url.endsWith('/') ? url : url + '/';
     },

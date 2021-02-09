@@ -1,10 +1,10 @@
 import { Url } from '../src/urlUtils';
-import { JsonStorage } from '../src/JsonStorage';
+import { JsonStorage } from '../src';
 import { number, object, string } from 'superstruct';
 
 describe('urls', () => {
     it('can be joined taking care of extra slashes', () => {
-        expect(Url.join('a', 'b/', '/c', 'd/')).toBe('a/b/c/d');
+        expect(Url.join('a', 'b/', '/c', 'd/')).toBe('a/b/c/d/');
     });
 });
 
