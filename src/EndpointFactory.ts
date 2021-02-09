@@ -22,7 +22,7 @@ export class EndpointFactory {
             server: this.server,
             method: 'POST',
             path,
-            urlWithParams: Url.withTrailingSlash,
+            urlWithParams: _.identity,
             hasRequestBody: true,
             struct,
             ...config,

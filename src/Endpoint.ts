@@ -60,7 +60,11 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
             return _.isFunction(this.mock) ? this.mock(...params) : this.mock;
         }
 
-        const url = this.urlWithParams(this.url, ...params);
+        let url = this.urlWithParams(this.url, ...params);
+        if (this.server.trailingSlash) {
+            url = Url.withTrailingSlash(url);
+        }
+
         const serverHeaders = new Headers(this.server.headers());
         const endpointHeaders = new Headers(this.headers?.());
 

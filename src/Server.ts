@@ -3,6 +3,7 @@ import _ from 'lodash';
 
 export interface ServerConfig {
     headers?(): HeadersInit;
+    trailingSlash?: boolean;
 }
 
 /** An object representing a single server, with
@@ -14,6 +15,9 @@ export class Server {
     constructor(readonly apiUrl: string, private config?: ServerConfig) {}
 
     headers = this.config?.headers ?? _.constant(new Headers());
+
+    // `true` by default because we assume Django.
+    trailingSlash = this.config?.trailingSlash ?? true;
 
     endpoint = new EndpointFactory(this);
 }

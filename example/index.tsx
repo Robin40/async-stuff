@@ -46,12 +46,12 @@ const morosidades = server.endpoint.getAll(
     'documentos/morosidades',
     array(models.Morosidad()),
     {
-        headers: () => ({
-            'Dani-Example': Math.random() < 0.5 ? 'Persona' : 'Corredor',
-        }),
-        mock: [
-            { id: 42, divisa: 'uf', monto: new Decimal(2000), pagado: true },
-        ],
+        // headers: () => ({
+        //     'Dani-Example': Math.random() < 0.5 ? 'Persona' : 'Corredor',
+        // }),
+        // mock: [
+        //     { id: 42, divisa: 'uf', monto: new Decimal(2000), pagado: true },
+        // ],
     }
 );
 
