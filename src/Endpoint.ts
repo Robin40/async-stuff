@@ -91,6 +91,10 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
             throw new FetchError(response, this.method);
         }
 
+        if (response.status === 204) {
+            return {} as ResponseData;
+        }
+
         // assume the response will be a JSON. This is not actually always correct.
         let data = await response.json();
 
