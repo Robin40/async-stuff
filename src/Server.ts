@@ -4,6 +4,7 @@ import _ from 'lodash';
 export interface ServerConfig {
     headers?(): HeadersInit;
     trailingSlash?: boolean;
+    shouldRetry?(attemptCount: number, error: unknown): Promise<boolean>;
 }
 
 /** An object representing a single server, with
@@ -20,4 +21,9 @@ export class Server {
     trailingSlash = this.config?.trailingSlash ?? true;
 
     endpoint = new EndpointFactory(this);
+
+    /** @internal */
+    async shouldRetry(attemptCount: number, error: unknown): Promise<boolean> {
+        return this.config?.shouldRetry?.(attemptCount, error) ?? false;
+    }
 }

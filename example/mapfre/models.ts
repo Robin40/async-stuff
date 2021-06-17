@@ -10,7 +10,7 @@ import {
     string,
     union,
 } from 'superstruct';
-import { decimal, localDate } from '../src/types';
+import { decimal, localDate } from '../../src/types';
 
 export const models = {
     LoginResponse: () =>

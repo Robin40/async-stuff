@@ -1,15 +1,18 @@
 import { CrudMethod } from './types';
 import { fetchWithInferredContentType } from './inferContentType';
 import _ from 'lodash';
-import { FetchError } from './FetchError';
+import { FetchError, isFetchError } from './FetchError';
 import { Url } from './urlUtils';
 import autoBind from 'auto-bind';
 import { create, Describe } from 'superstruct';
 import { Server } from './Server';
+import { events } from './events';
+import { EndpointConfig } from './EndpointFactory';
 
 /** @internal
  * An object with all the parameters received by the Endpoint constructor. */
-export interface EndpointParams<FetchParams extends any[], ResponseData> {
+export interface EndpointParams<FetchParams extends any[], ResponseData>
+    extends EndpointConfig<FetchParams, ResponseData> {
     /** The server object used to create this endpoint. */
     server: Server;
 
@@ -27,10 +30,6 @@ export interface EndpointParams<FetchParams extends any[], ResponseData> {
 
     /** A SuperStruct object to validate and coerce the JSON response. */
     struct?: Describe<ResponseData>;
-
-    headers?(): HeadersInit;
-
-    mock?: ResponseData | ((...params: FetchParams) => ResponseData);
 }
 
 /** An object representing a single endpoint (with a single HTTP method).
@@ -43,8 +42,8 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         autoBind(this);
     }
 
-    private server = this.params.server;
-    private method = this.params.method;
+    readonly server = this.params.server;
+    readonly method = this.params.method;
     private path = this.params.path;
     private urlWithParams = this.params.urlWithParams;
     private hasRequestBody = this.params.hasRequestBody;
@@ -56,6 +55,39 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
     /** Makes a request to the endpoint with the given params. */
     async fetch(...params: FetchParams): Promise<ResponseData> {
+        try {
+            return await this.fetchWithRetries(0, ...params);
+        } catch (error) {
+            if (isFetchError(error)) {
+                window.dispatchEvent(
+                    new CustomEvent(events.FETCH_ERROR, {
+                        detail: error,
+                    })
+                );
+            }
+
+            throw error;
+        }
+    }
+
+    private async fetchWithRetries(
+        attemptCount: number,
+        ...params: FetchParams
+    ): Promise<ResponseData> {
+        try {
+            return await this.fetchWithoutRetry(...params);
+        } catch (error) {
+            if (await this.shouldRetry(attemptCount + 1, error)) {
+                return await this.fetchWithRetries(attemptCount + 1, ...params);
+            } else {
+                throw error;
+            }
+        }
+    }
+
+    private async fetchWithoutRetry(
+        ...params: FetchParams
+    ): Promise<ResponseData> {
         if (this.mock !== undefined) {
             return _.isFunction(this.mock) ? this.mock(...params) : this.mock;
         }
@@ -76,7 +108,6 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
                 body: this.hasRequestBody ? _.last(params) : undefined,
             });
         } catch (err) {
-            console.log({ err });
             if (isNetworkError(err) && this.mock !== undefined) {
                 return this.mock;
             }
@@ -87,22 +118,31 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
             return this.mock;
         }
 
+        let data: unknown = {};
+        if (response.status !== 204) {
+            // assume the response will be a JSON. This is not actually always correct.
+            data = await response.json();
+        }
+
         if (!response.ok) {
-            throw new FetchError(response, this.method);
+            throw new FetchError(this, response, data);
         }
-
-        if (response.status === 204) {
-            return {} as ResponseData;
-        }
-
-        // assume the response will be a JSON. This is not actually always correct.
-        let data = await response.json();
 
         if (this.struct) {
             data = create(data, this.struct);
         }
 
-        return data;
+        return data as ResponseData;
+    }
+
+    private async shouldRetry(
+        attemptCount: number,
+        error: unknown
+    ): Promise<boolean> {
+        return (
+            (await this.params.shouldRetry?.(attemptCount, error)) ??
+            (await this.server.shouldRetry(attemptCount, error))
+        );
     }
 }
 

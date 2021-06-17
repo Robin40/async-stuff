@@ -1,6 +1,7 @@
 import { Bearer } from './Bearer';
 import { Endpoint } from './Endpoint';
-import { FetchError } from './FetchError';
+import { events } from './events';
+import { FetchError, isFetchError } from './FetchError';
 import { JsonCounterpart } from './jsonResponse';
 import { JsonStorage } from './JsonStorage';
 import { Server, ServerConfig } from './Server';
@@ -18,6 +19,8 @@ export {
     ServerConfig,
     Url,
     decimal,
+    events,
+    isFetchError,
     localDate,
     useJsonStorage,
     zonedDateTime,

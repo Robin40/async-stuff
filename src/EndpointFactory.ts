@@ -7,7 +7,13 @@ import { PossibleId } from './types';
 
 export interface EndpointConfig<FetchParams extends any[], ResponseData> {
     headers?(): HeadersInit;
+
     mock?: ResponseData | ((...params: FetchParams) => ResponseData);
+
+    shouldRetry?(
+        attemptCount: number,
+        error: unknown
+    ): Promise<boolean | undefined>;
 }
 
 export class EndpointFactory {
