@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { FetchError, isFetchError } from './FetchError';
 import { Url } from './urlUtils';
 import autoBind from 'auto-bind';
-import { create, Describe } from 'superstruct';
+import { create, Describe, StructError } from 'superstruct';
 import { Server } from './Server';
 import { events } from './events';
 import { EndpointConfig } from './EndpointFactory';
@@ -129,7 +129,16 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         }
 
         if (this.struct) {
-            data = create(data, this.struct);
+            try {
+                data = create(data, this.struct);
+            } catch (err) {
+                if (data instanceof StructError) {
+                    console.error(
+                        `StructError in response for ${this.method} ${url}`
+                    );
+                }
+                throw err;
+            }
         }
 
         return data as ResponseData;
