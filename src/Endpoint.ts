@@ -132,7 +132,8 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
             try {
                 data = create(data, this.struct);
             } catch (err) {
-                if (data instanceof StructError) {
+                console.log(err);
+                if (err instanceof StructError) {
                     console.error(
                         `StructError in response for ${this.method} ${url}`
                     );

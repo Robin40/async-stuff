@@ -1,4 +1,4 @@
-import { FetchError, isFetchError, Server } from '../../../src';
+import { isFetchError, Server } from '../../../src';
 import { EmailPass, TokenPair, UserInfo } from './types';
 import { authStorage } from '../auth/authStorage';
 import { isTokenError } from '../utils/isTokenError';
