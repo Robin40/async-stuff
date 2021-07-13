@@ -27,7 +27,7 @@
     "decimal.js": "^10.2.1",
     "js-joda": "^1.11.0",
     "react": ">=16",
-    "superstruct": "^0.13.3"
+    "superstruct": ">=0.13.3"
   },
   "husky": {
     "hooks": {
