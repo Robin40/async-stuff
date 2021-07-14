@@ -20,7 +20,3 @@ export class FetchError extends Error {
         this.name = 'FetchError';
     }
 }
-
-export function isFetchError(error: unknown): error is FetchError {
-    return error instanceof Error && error.name === 'FetchError';
-}

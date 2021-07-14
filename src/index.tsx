@@ -1,13 +1,20 @@
 import { Bearer } from './Bearer';
 import { Endpoint } from './Endpoint';
 import { events } from './events';
-import { FetchError, isFetchError } from './FetchError';
+import { FetchError } from './FetchError';
 import { JsonCounterpart } from './jsonResponse';
 import { JsonStorage } from './JsonStorage';
 import { Server, ServerConfig } from './Server';
 import { decimal, localDate, zonedDateTime } from './types';
 import { Url } from './urlUtils';
 import { useJsonStorage } from './useJsonStorage';
+import { useRequestErrorHandler } from './useRequestErrorHandler';
+import {
+    isDjangoTokenError,
+    isFetchError,
+    isNetworkError,
+    isStructError,
+} from './utils/errorTypeGuards';
 
 export {
     Bearer,
@@ -20,8 +27,12 @@ export {
     Url,
     decimal,
     events,
+    isDjangoTokenError,
     isFetchError,
+    isNetworkError,
+    isStructError,
     localDate,
     useJsonStorage,
+    useRequestErrorHandler,
     zonedDateTime,
 };

@@ -1,6 +1,7 @@
-import { create, Describe, StructError } from 'superstruct';
+import { create, Describe } from 'superstruct';
 import { Observable } from './Observable';
 import autoBind from 'auto-bind';
+import { isStructError } from './utils/errorTypeGuards';
 
 export class JsonStorage<T> extends Observable<T | undefined> {
     constructor(private key: string, private struct: Describe<T>) {
@@ -51,13 +52,13 @@ export class JsonStorage<T> extends Observable<T | undefined> {
         /* Pass the JSON object thru SuperStruct. */
         try {
             return create(jsonData, this.struct);
-        } catch (err) {
-            if (err instanceof StructError) {
-                console.error(err);
+        } catch (error) {
+            if (isStructError(error)) {
+                console.error(error);
                 this.onInvalidData();
                 return undefined;
             }
-            throw err;
+            throw error;
         }
     }
 

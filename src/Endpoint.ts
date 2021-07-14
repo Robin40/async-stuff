@@ -1,13 +1,18 @@
 import { CrudMethod } from './types';
 import { fetchWithInferredContentType } from './inferContentType';
 import _ from 'lodash';
-import { FetchError, isFetchError } from './FetchError';
+import { FetchError } from './FetchError';
 import { Url } from './urlUtils';
 import autoBind from 'auto-bind';
-import { create, Describe, StructError } from 'superstruct';
+import { create, Describe } from 'superstruct';
 import { Server } from './Server';
 import { events } from './events';
 import { EndpointConfig } from './EndpointFactory';
+import {
+    isFetchError,
+    isNetworkError,
+    isStructError,
+} from './utils/errorTypeGuards';
 
 /** @internal
  * An object with all the parameters received by the Endpoint constructor. */
@@ -58,14 +63,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         try {
             return await this.fetchWithRetries(0, ...params);
         } catch (error) {
-            if (isFetchError(error)) {
-                window.dispatchEvent(
-                    new CustomEvent(events.FETCH_ERROR, {
-                        detail: error,
-                    })
-                );
-            }
-
+            dispatchRequestError(error);
             throw error;
         }
     }
@@ -131,14 +129,13 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         if (this.struct) {
             try {
                 data = create(data, this.struct);
-            } catch (err) {
-                console.log(err);
-                if (err instanceof StructError) {
+            } catch (error) {
+                if (isStructError(error)) {
                     console.error(
                         `StructError in response for ${this.method} ${url}`
                     );
                 }
-                throw err;
+                throw error;
             }
         }
 
@@ -163,9 +160,15 @@ function mergeHeaders(a: Headers, b: Headers) {
     return a;
 }
 
-export function isNetworkError(err: any): boolean {
-    return (
-        err instanceof TypeError &&
-        (err.message.includes('NetworkError') || err.message.includes('fetch'))
+/** Dispatches the request error to every instance of `useRequestErrorHandler`. */
+function dispatchRequestError(error: unknown) {
+    window.dispatchEvent(
+        new CustomEvent(events.REQUEST_ERROR, { detail: error })
     );
+    /* Keep legacy FETCH_ERROR event so we don't break old code. */
+    if (isFetchError(error)) {
+        window.dispatchEvent(
+            new CustomEvent(events.FETCH_ERROR, { detail: error })
+        );
+    }
 }

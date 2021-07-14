@@ -1,7 +1,6 @@
-import { isFetchError, Server } from '../../../src';
+import { isDjangoTokenError, isFetchError, Server } from '../../../src';
 import { EmailPass, TokenPair, UserInfo } from './types';
 import { authStorage } from '../auth/authStorage';
-import { isTokenError } from '../utils/isTokenError';
 
 const server = new Server('https://classbook-back-dev.labs-tdc.com/api/', {
     headers() {
@@ -15,7 +14,11 @@ const server = new Server('https://classbook-back-dev.labs-tdc.com/api/', {
 
     async shouldRetry(attemptCount: number, error: unknown) {
         const refreshToken = authStorage.get()?.refreshToken;
-        if (isTokenError(error) && refreshToken != null && attemptCount < 2) {
+        if (
+            isDjangoTokenError(error) &&
+            refreshToken != null &&
+            attemptCount < 2
+        ) {
             const { access } = await endpoints.refreshToken.fetch({
                 refresh: refreshToken,
             });
