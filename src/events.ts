@@ -14,6 +14,9 @@ declare global {
     // noinspection JSUnusedGlobalSymbols
     interface WindowEventMap {
         [events.FETCH_ERROR]: CustomEvent<FetchError>;
-        [events.REQUEST_ERROR]: CustomEvent<unknown>;
+        [events.REQUEST_ERROR]: CustomEvent<{
+            error: unknown;
+            request: Request;
+        }>;
     }
 }

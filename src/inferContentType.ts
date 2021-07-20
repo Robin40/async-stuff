@@ -6,29 +6,38 @@ export async function fetchWithInferredContentType<RequestBody>(
     url: string,
     init: RequestInitWith<RequestBody>
 ): Promise<Response> {
+    return fetch(requestWithInferredContentType(url, init));
+}
+
+/** Makes a Request object where the Content-Type is inferred by a `body`
+ * that can be a JS object, a FormData, or nothing. */
+export function requestWithInferredContentType<RequestBody>(
+    url: string,
+    init: RequestInitWith<RequestBody>
+): Request {
     /* If a `body` was not passed, we don't need to infer the Content-Type */
     if (_.isUndefined(init.body)) {
-        return fetch(url, init as any);
+        return new Request(url, init as any);
     }
 
     /* If a `FormData` object is passed, `fetch` can infer the Content-Type */
     if (init.body instanceof FormData) {
-        return fetch(url, init as any);
+        return new Request(url, init as any);
     }
 
-    return fetchWithJsonContentType(url, init);
+    return requestWithJsonContentType(url, init);
 }
 
-/** A version of the `fetch` function where the Content-Type is always
+/** Makes a Request object where the Content-Type is always
  * JSON and the body is passed as an object instead of JSON.stringify. */
-async function fetchWithJsonContentType<RequestBody>(
+function requestWithJsonContentType<RequestBody>(
     url: string,
     init: RequestInitWith<RequestBody>
-): Promise<Response> {
+): Request {
     let headers = new Headers(init.headers); // [1]
     headers.append('Content-Type', 'application/json');
 
-    return fetch(url, {
+    return new Request(url, {
         ...init,
         headers,
         body: JSON.stringify(init.body),

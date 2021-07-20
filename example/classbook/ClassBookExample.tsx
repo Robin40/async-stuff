@@ -8,10 +8,17 @@ import { IndexScreen } from './screens/IndexScreen';
 import { AuthProvider } from './auth/AuthProvider';
 import { AdminScreen } from './screens/AdminScreen';
 import { NotFound404Screen } from './screens/NotFound404Screen';
+import { useRequestErrorHandler } from '../../src';
 
 const queryClient = new QueryClient();
 
 export function ClassBookExample() {
+    useRequestErrorHandler({
+        onStructError(detail) {
+            console.log({ detail });
+        },
+    });
+
     return (
         <QueryClientProvider client={queryClient}>
             <AuthProvider>

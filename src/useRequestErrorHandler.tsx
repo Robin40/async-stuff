@@ -9,7 +9,19 @@ import {
     isStructError,
 } from './utils/errorTypeGuards';
 
-export type RequestErrorHandler<T> = (error: T, event: CustomEvent<T>) => void;
+export type RequestErrorHandler<T> = (
+    detail: { error: T; request: Request },
+    event: CustomEvent<T>
+) => void;
+
+interface Handlers {
+    onAnyError: RequestErrorHandler<unknown>;
+    onBadResponseError: RequestErrorHandler<FetchError>;
+    onDjangoTokenError: RequestErrorHandler<FetchError>;
+    onNetworkError: RequestErrorHandler<TypeError>;
+    onStructError: RequestErrorHandler<StructError>;
+    onUnknownError: RequestErrorHandler<unknown>;
+}
 
 /** A hook that allows handling request errors for any endpoint from a single place.
  *
@@ -23,14 +35,7 @@ export type RequestErrorHandler<T> = (error: T, event: CustomEvent<T>) => void;
  * - `onUnknownError` will be called if the error is an exception not covered by any of the previous cases.
  * */
 export function useRequestErrorHandler(
-    handlers: Partial<{
-        onAnyError: RequestErrorHandler<unknown>;
-        onBadResponseError: RequestErrorHandler<FetchError>;
-        onDjangoTokenError: RequestErrorHandler<FetchError>;
-        onNetworkError: RequestErrorHandler<TypeError>;
-        onStructError: RequestErrorHandler<StructError>;
-        onUnknownError: RequestErrorHandler<unknown>;
-    }>,
+    handlers: Partial<Handlers>,
     options?: AddEventListenerOptions
 ) {
     /* Always use the latest version of the handlers callbacks
@@ -46,20 +51,23 @@ export function useRequestErrorHandler(
      * appropriate handler(s) depending on the error type. */
     useEffect(() => {
         function listener(event: CustomEvent) {
-            const error = event.detail as unknown;
+            const error = event.detail.error;
 
-            handlersRef.current.onAnyError?.(error, event);
+            handlersRef.current.onAnyError?.(event.detail, event);
             if (isFetchError(error)) {
-                handlersRef.current.onBadResponseError?.(error, event);
+                handlersRef.current.onBadResponseError?.(event.detail, event);
                 if (isDjangoTokenError(error)) {
-                    handlersRef.current.onDjangoTokenError?.(error, event);
+                    handlersRef.current.onDjangoTokenError?.(
+                        event.detail,
+                        event
+                    );
                 }
             } else if (isNetworkError(error)) {
-                handlersRef.current.onNetworkError?.(error, event);
+                handlersRef.current.onNetworkError?.(event.detail, event);
             } else if (isStructError(error)) {
-                handlersRef.current.onStructError?.(error, event);
+                handlersRef.current.onStructError?.(event.detail, event);
             } else {
-                handlersRef.current.onUnknownError?.(error, event);
+                handlersRef.current.onUnknownError?.(event.detail, event);
             }
         }
 

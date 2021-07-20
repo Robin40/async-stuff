@@ -1,5 +1,5 @@
 import { CrudMethod } from './types';
-import { fetchWithInferredContentType } from './inferContentType';
+import { requestWithInferredContentType } from './inferContentType';
 import _ from 'lodash';
 import { FetchError } from './FetchError';
 import { Url } from './urlUtils';
@@ -8,11 +8,7 @@ import { create, Describe } from 'superstruct';
 import { Server } from './Server';
 import { events } from './events';
 import { EndpointConfig } from './EndpointFactory';
-import {
-    isFetchError,
-    isNetworkError,
-    isStructError,
-} from './utils/errorTypeGuards';
+import { isFetchError } from './utils/errorTypeGuards';
 
 /** @internal
  * An object with all the parameters received by the Endpoint constructor. */
@@ -60,36 +56,21 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
     /** Makes a request to the endpoint with the given params. */
     async fetch(...params: FetchParams): Promise<ResponseData> {
-        try {
-            return await this.fetchWithRetries(0, ...params);
-        } catch (error) {
-            dispatchRequestError(error);
-            throw error;
-        }
-    }
-
-    private async fetchWithRetries(
-        attemptCount: number,
-        ...params: FetchParams
-    ): Promise<ResponseData> {
-        try {
-            return await this.fetchWithoutRetry(...params);
-        } catch (error) {
-            if (await this.shouldRetry(attemptCount + 1, error)) {
-                return await this.fetchWithRetries(attemptCount + 1, ...params);
-            } else {
-                throw error;
-            }
-        }
-    }
-
-    private async fetchWithoutRetry(
-        ...params: FetchParams
-    ): Promise<ResponseData> {
         if (this.mock !== undefined) {
             return _.isFunction(this.mock) ? this.mock(...params) : this.mock;
         }
 
+        const request = this.makeRequestObject(...params);
+
+        try {
+            return await this.fetchWithRetries(0, request);
+        } catch (error) {
+            dispatchRequestError(error, request);
+            throw error;
+        }
+    }
+
+    private makeRequestObject(...params: FetchParams): Request {
         let url = this.urlWithParams(this.url, ...params);
         if (this.server.trailingSlash) {
             url = Url.withTrailingSlash(url);
@@ -98,23 +79,30 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         const serverHeaders = new Headers(this.server.headers());
         const endpointHeaders = new Headers(this.headers?.());
 
-        let response: Response;
-        try {
-            response = await fetchWithInferredContentType(url, {
-                method: this.method,
-                headers: mergeHeaders(serverHeaders, endpointHeaders),
-                body: this.hasRequestBody ? _.last(params) : undefined,
-            });
-        } catch (err) {
-            if (isNetworkError(err) && this.mock !== undefined) {
-                return this.mock;
-            }
-            throw err;
-        }
+        return requestWithInferredContentType(url, {
+            method: this.method,
+            headers: mergeHeaders(serverHeaders, endpointHeaders),
+            body: this.hasRequestBody ? _.last(params) : undefined,
+        });
+    }
 
-        if (response.status === 404 && this.mock !== undefined) {
-            return this.mock;
+    private async fetchWithRetries(
+        attemptCount: number,
+        request: Request
+    ): Promise<ResponseData> {
+        try {
+            return await this.fetchWithoutRetry(request);
+        } catch (error) {
+            if (await this.shouldRetry(attemptCount + 1, error)) {
+                return await this.fetchWithRetries(attemptCount + 1, request);
+            } else {
+                throw error;
+            }
         }
+    }
+
+    private async fetchWithoutRetry(request: Request): Promise<ResponseData> {
+        const response = await fetch(request);
 
         let data: unknown = {};
         if (response.status !== 204) {
@@ -127,16 +115,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         }
 
         if (this.struct) {
-            try {
-                data = create(data, this.struct);
-            } catch (error) {
-                if (isStructError(error)) {
-                    console.error(
-                        `StructError in response for ${this.method} ${url}`
-                    );
-                }
-                throw error;
-            }
+            data = create(data, this.struct);
         }
 
         return data as ResponseData;
@@ -161,9 +140,9 @@ function mergeHeaders(a: Headers, b: Headers) {
 }
 
 /** Dispatches the request error to every instance of `useRequestErrorHandler`. */
-function dispatchRequestError(error: unknown) {
+function dispatchRequestError(error: unknown, request: Request) {
     window.dispatchEvent(
-        new CustomEvent(events.REQUEST_ERROR, { detail: error })
+        new CustomEvent(events.REQUEST_ERROR, { detail: { error, request } })
     );
     /* Keep legacy FETCH_ERROR event so we don't break old code. */
     if (isFetchError(error)) {
