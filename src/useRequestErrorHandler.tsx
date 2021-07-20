@@ -1,7 +1,7 @@
 import { FetchError } from './FetchError';
 import { StructError } from 'superstruct';
 import { useEffect, useRef } from 'react';
-import { events } from './events';
+import { events, RequestErrorDetail } from './events';
 import {
     isDjangoTokenError,
     isFetchError,
@@ -10,7 +10,7 @@ import {
 } from './utils/errorTypeGuards';
 
 export type RequestErrorHandler<T> = (
-    detail: { error: T; request: Request },
+    detail: RequestErrorDetail<T>,
     event: CustomEvent<T>
 ) => void;
 
