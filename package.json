@@ -1,6 +1,6 @@
 {
   "name": "@tdc-cl/async-stuff",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Declarative handling of asynchronous stuff related to REST APIs",
   "author": "Robin40",
   "license": "MIT",
