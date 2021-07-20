@@ -33,8 +33,9 @@ const server = new Server('https://classbook-back-dev.labs-tdc.com/api/', {
 
 export const endpoints = {
     token: server.endpoint.post<EmailPass, TokenPair>(
-        '/token/'
-        // type({ access: string(), refresh: boolean() }) as any
+        '/token/',
+        type({ access: string(), refresh: boolean() }) as any,
+        { name: 'token' }
     ),
     refreshToken: server.endpoint.post<{ refresh: string }, { access: string }>(
         '/token/refresh/',

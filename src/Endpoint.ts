@@ -45,6 +45,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
     readonly server = this.params.server;
     readonly method = this.params.method;
+    readonly name = this.params.name;
     private path = this.params.path;
     private urlWithParams = this.params.urlWithParams;
     private hasRequestBody = this.params.hasRequestBody;
@@ -65,7 +66,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         try {
             return await this.fetchWithRetries(0, request);
         } catch (error) {
-            dispatchRequestError(error, request);
+            this.dispatchRequestError(error, request);
             throw error;
         }
     }
@@ -130,6 +131,23 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
             (await this.server.shouldRetry(attemptCount, error))
         );
     }
+
+    /** Dispatches the request error to every instance of `useRequestErrorHandler`. */
+    private dispatchRequestError(error: unknown, request: Request) {
+        const endpoint = this;
+        window.dispatchEvent(
+            new CustomEvent(events.REQUEST_ERROR, {
+                detail: { error, request, endpoint },
+            })
+        );
+
+        /* Keep legacy FETCH_ERROR event so we don't break old code. */
+        if (isFetchError(error)) {
+            window.dispatchEvent(
+                new CustomEvent(events.FETCH_ERROR, { detail: error })
+            );
+        }
+    }
 }
 
 function mergeHeaders(a: Headers, b: Headers) {
@@ -137,17 +155,4 @@ function mergeHeaders(a: Headers, b: Headers) {
         a.append(name, value);
     });
     return a;
-}
-
-/** Dispatches the request error to every instance of `useRequestErrorHandler`. */
-function dispatchRequestError(error: unknown, request: Request) {
-    window.dispatchEvent(
-        new CustomEvent(events.REQUEST_ERROR, { detail: { error, request } })
-    );
-    /* Keep legacy FETCH_ERROR event so we don't break old code. */
-    if (isFetchError(error)) {
-        window.dispatchEvent(
-            new CustomEvent(events.FETCH_ERROR, { detail: error })
-        );
-    }
 }

@@ -6,6 +6,8 @@ import _ from 'lodash';
 import { PossibleId } from './types';
 
 export interface EndpointConfig<FetchParams extends any[], ResponseData> {
+    name?: string;
+
     headers?(): HeadersInit;
 
     mock?: ResponseData | ((...params: FetchParams) => ResponseData);

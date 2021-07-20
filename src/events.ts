@@ -1,4 +1,5 @@
 import { FetchError } from './FetchError';
+import { Endpoint } from './Endpoint';
 
 export const events = {
     FETCH_ERROR: '@tdc-cl/async-stuff::FetchError',
@@ -14,9 +15,12 @@ declare global {
     // noinspection JSUnusedGlobalSymbols
     interface WindowEventMap {
         [events.FETCH_ERROR]: CustomEvent<FetchError>;
-        [events.REQUEST_ERROR]: CustomEvent<{
-            error: unknown;
-            request: Request;
-        }>;
+        [events.REQUEST_ERROR]: CustomEvent<RequestErrorDetail>;
     }
+}
+
+export interface RequestErrorDetail<T = unknown> {
+    error: T;
+    request: Request;
+    endpoint: Endpoint<any, any>;
 }

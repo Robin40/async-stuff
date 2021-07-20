@@ -1,6 +1,6 @@
 import { Bearer } from './Bearer';
 import { Endpoint } from './Endpoint';
-import { events } from './events';
+import { events, RequestErrorDetail } from './events';
 import { FetchError } from './FetchError';
 import { JsonCounterpart } from './jsonResponse';
 import { JsonStorage } from './JsonStorage';
@@ -22,6 +22,7 @@ export {
     FetchError,
     JsonCounterpart,
     JsonStorage,
+    RequestErrorDetail,
     Server,
     ServerConfig,
     Url,
