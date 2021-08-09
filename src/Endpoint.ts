@@ -107,8 +107,12 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
         let data: unknown = {};
         if (response.status !== 204) {
-            // assume the response will be a JSON. This is not actually always correct.
-            data = await response.json();
+            // TODO: handle blob content type
+            if (response.headers.get('Content-Type')?.includes('text')) {
+                data = await response.text();
+            } else {
+                data = await response.json();
+            }
         }
 
         if (!response.ok) {
