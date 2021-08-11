@@ -61,14 +61,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
             return _.isFunction(this.mock) ? this.mock(...params) : this.mock;
         }
 
-        const request = this.makeRequestObject(...params);
-
-        try {
-            return await this.fetchWithRetries(0, request);
-        } catch (error) {
-            this.dispatchRequestError(error, request);
-            throw error;
-        }
+        return await this.fetchWithRetries(0, ...params);
     }
 
     private makeRequestObject(...params: FetchParams): Request {
@@ -89,14 +82,16 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
     private async fetchWithRetries(
         attemptCount: number,
-        request: Request
+        ...params: FetchParams
     ): Promise<ResponseData> {
+        const request = this.makeRequestObject(...params);
         try {
             return await this.fetchWithoutRetry(request);
         } catch (error) {
             if (await this.shouldRetry(attemptCount + 1, error)) {
-                return await this.fetchWithRetries(attemptCount + 1, request);
+                return await this.fetchWithRetries(attemptCount + 1, ...params);
             } else {
+                this.dispatchRequestError(error, request);
                 throw error;
             }
         }
