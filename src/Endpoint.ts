@@ -64,7 +64,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         return await this.fetchWithRetries(0, ...params);
     }
 
-    private makeRequestObject(...params: FetchParams): Request {
+    makeRequestObject(...params: FetchParams): Request {
         let url = this.urlWithParams(this.url, ...params);
         if (this.server.trailingSlash) {
             url = Url.withTrailingSlash(url);
