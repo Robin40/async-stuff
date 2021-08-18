@@ -38,5 +38,5 @@ export function isNetworkError(error: unknown): error is TypeError {
  * with a good status code (200-299), but with a response data
  * that is not valid against the endpoint's `struct`. */
 export function isStructError(error: unknown): error is StructError {
-    return error instanceof StructError;
+    return error instanceof Error && error.name === 'StructError';
 }
