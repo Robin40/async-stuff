@@ -58,7 +58,21 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
     /** Makes a request to the endpoint with the given params. */
     async fetch(...params: FetchParams): Promise<ResponseData> {
         if (this.mock !== undefined) {
-            return _.isFunction(this.mock) ? this.mock(...params) : this.mock;
+            try {
+                let data = _.isFunction(this.mock)
+                    ? this.mock(...params)
+                    : this.mock;
+
+                if (this.struct) {
+                    data = create(data, this.struct);
+                }
+
+                return data;
+            } catch (error) {
+                const mockRequest = this.makeRequestObject(...params);
+                this.dispatchRequestError(error, mockRequest);
+                throw error;
+            }
         }
 
         return await this.fetchWithRetries(0, ...params);
