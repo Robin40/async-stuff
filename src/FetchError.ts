@@ -5,6 +5,7 @@ import { Endpoint } from './Endpoint';
 export class FetchError extends Error {
     constructor(
         readonly endpoint: Endpoint<any, any>,
+        readonly request: Request,
         readonly response: Response,
         readonly data: any
     ) {

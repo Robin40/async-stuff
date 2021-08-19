@@ -125,7 +125,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
         }
 
         if (!response.ok) {
-            throw new FetchError(this, response, data);
+            throw new FetchError(this, request, response, data);
         }
 
         if (this.struct) {
