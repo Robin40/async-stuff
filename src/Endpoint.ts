@@ -113,12 +113,19 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
     private async fetchWithoutRetry(request: Request): Promise<ResponseData> {
         const response = await fetch(request);
+        const contentType = response.headers.get('Content-Type');
 
         let data: unknown = {};
         if (response.status !== 204) {
-            // TODO: handle blob content type
-            if (response.headers.get('Content-Type')?.includes('text')) {
+            if (
+                contentType?.includes('application') &&
+                contentType?.includes('json')
+            ) {
+                data = await response.json();
+            } else if (contentType?.includes('text')) {
                 data = await response.text();
+            } else if (contentType) {
+                data = await response.blob();
             } else {
                 data = await response.json();
             }
