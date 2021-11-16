@@ -113,23 +113,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
     private async fetchWithoutRetry(request: Request): Promise<ResponseData> {
         const response = await fetch(request);
-        const contentType = response.headers.get('Content-Type');
-
-        let data: unknown = {};
-        if (response.status !== 204) {
-            if (
-                contentType?.includes('application') &&
-                contentType?.includes('json')
-            ) {
-                data = await response.json();
-            } else if (contentType?.includes('text')) {
-                data = await response.text();
-            } else if (contentType) {
-                data = await response.blob();
-            } else {
-                data = await response.json();
-            }
-        }
+        let data = await this.parseResponseData(response);
 
         if (!response.ok) {
             throw new FetchError(this, request, response, data);
@@ -150,6 +134,31 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
             (await this.params.shouldRetry?.(attemptCount, error)) ??
             (await this.server.shouldRetry(attemptCount, error))
         );
+    }
+
+    private async parseResponseData(response: Response): Promise<unknown> {
+        const contentType = response.headers.get('Content-Type');
+
+        if (this.params.parseResponseData) {
+            return await this.params.parseResponseData(response);
+        }
+
+        if (response.status === 204) {
+            return {};
+        }
+
+        if (
+            contentType?.includes('application') &&
+            contentType?.includes('json')
+        ) {
+            return await response.json();
+        } else if (contentType?.includes('text')) {
+            return await response.text();
+        } else if (contentType) {
+            return await response.blob();
+        } else {
+            return await response.json();
+        }
     }
 
     /** Dispatches the request error to every instance of `useRequestErrorHandler`. */

@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom';
 import { MapfreExample } from './mapfre/MapfreExample';
 import { ClassBookExample } from './classbook/ClassBookExample';
+import { MindicadorExample } from './mindicador/MindicadorExample';
 
 // noinspection JSUnusedGlobalSymbols
 const examples = {
     ClassBookExample,
     MapfreExample,
+    MindicadorExample,
 };
 
 function Nothing() {

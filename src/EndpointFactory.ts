@@ -16,6 +16,8 @@ export interface EndpointConfig<FetchParams extends any[], ResponseData> {
         attemptCount: number,
         error: unknown
     ): Promise<boolean | undefined>;
+
+    parseResponseData?(response: Response): Promise<unknown>;
 }
 
 export class EndpointFactory {
