@@ -80,7 +80,7 @@ export class Endpoint<FetchParams extends any[], ResponseData> {
 
     makeRequestObject(...params: FetchParams): Request {
         let url = this.urlWithParams(this.url, ...params);
-        if (this.server.trailingSlash) {
+        if (this.params.trailingSlash ?? this.server.trailingSlash) {
             url = Url.withTrailingSlash(url);
         }
 

@@ -18,6 +18,8 @@ export interface EndpointConfig<FetchParams extends any[], ResponseData> {
     ): Promise<boolean | undefined>;
 
     parseResponseData?(response: Response): Promise<unknown>;
+
+    trailingSlash?: boolean;
 }
 
 export class EndpointFactory {
