@@ -46,13 +46,15 @@ export class EndpointFactory {
         path: string,
         struct?: Describe<ResponseData>,
         config?: EndpointConfig<[], ResponseData>
-    ): Endpoint<[queryParams?: TQueryParams], ResponseData> {
+    ): Endpoint<[TQueryParams?], ResponseData> {
         return new Endpoint({
             server: this.server,
             method: 'GET',
             path,
             urlWithParams(url: string, queryParams?: TQueryParams) {
-                return queryParams ? `${url}?${qs.stringify(queryParams)}` : url;
+                return queryParams
+                    ? `${url}?${qs.stringify(queryParams)}`
+                    : url;
             },
             trailingSlash: false,
             hasRequestBody: false,
