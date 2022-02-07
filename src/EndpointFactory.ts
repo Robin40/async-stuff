@@ -4,6 +4,7 @@ import { Endpoint } from './Endpoint';
 import { Url } from './urlUtils';
 import _ from 'lodash';
 import { PossibleId } from './types';
+import qs from 'qs';
 
 export interface EndpointConfig<FetchParams extends any[], ResponseData> {
     name?: string;
@@ -41,16 +42,19 @@ export class EndpointFactory {
         });
     }
 
-    getAll<ResponseData>(
+    getAll<ResponseData, TQueryParams extends object = {}>(
         path: string,
         struct?: Describe<ResponseData>,
         config?: EndpointConfig<[], ResponseData>
-    ): Endpoint<[], ResponseData> {
+    ): Endpoint<[queryParams?: TQueryParams], ResponseData> {
         return new Endpoint({
             server: this.server,
             method: 'GET',
             path,
-            urlWithParams: _.identity,
+            urlWithParams(url: string, queryParams?: TQueryParams) {
+                return queryParams ? `${url}?${qs.stringify(queryParams)}` : url;
+            },
+            trailingSlash: false,
             hasRequestBody: false,
             struct,
             ...config,
